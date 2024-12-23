@@ -1,3 +1,4 @@
+EXAMPLE- https://www.youtube.com/watch?v=bx52WmQvbaE&list=PLb49csYFtO2HqAiAKzJdZLFZsePfXnCov&index=4 follow this example it will tell how to train the custom dataset
 Step-1 prepare dataset
 a) internet se images download karenge yaa imagenet ek site ka nam hai waha se hum images ko download kar sakte hai https://storage.googleapis.com/openimages/web/visualizer/index.html?type=detection&set=train&c=%2Fm%2F012n7d
 b) download karne ke bad. maine D:\objectdetection\data folder ke andar do aur folder banaye train and val ke name se. so maine 85% images train me rakha aur baki ke bache images ko maine val me rkaha
