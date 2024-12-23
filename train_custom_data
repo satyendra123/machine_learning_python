@@ -1,0 +1,219 @@
+Step-1 prepare dataset
+a) internet se images download karenge yaa imagenet ek site ka nam hai waha se hum images ko download kar sakte hai https://storage.googleapis.com/openimages/web/visualizer/index.html?type=detection&set=train&c=%2Fm%2F012n7d
+b) download karne ke bad. maine D:\objectdetection\data folder ke andar do aur folder banaye train and val ke name se. so maine 85% images train me rakha aur baki ke bache images ko maine val me rkaha
+
+Step-2 ab mai is data folder folder upload ki madad se upload karta hu apne google drive me so mai ek folder banata hu computervisionengineer is name se google driver me aur iske andar mai ek aur folder banata hu objectdetectionyolov8googlecolab is name se
+       aur iske andar mai apne data folder ko upload kar deta hu apne system se. aur mai google colab se apne same gmail se signin kar deta hu jisse mera google driv chal rha hai. aur yaha mai ek file banata hu google colab ka jiska nam 
+       trainyolov8customdataset is name se aur jab mai ise open karunga to isi me mai code karna start karunga
+
+step-3 so basically mujhe apne google colab me apne model ko train karana hai kyu train krane ke liye mujhe GPU ki jarurat padhti hai jo system me nahi mil pata hai so hum basically is chiz ka use karte hai
+hum yaha samjhne ki kosis karte hai ki step-3 me basically hum karte kya hai. hum ek data
+
+data ----------------> 1) images ---------------------> train (85% images put in this after download the images for custom dataset ) 
+                                 ---------------------> val (15% images put in this after download the images for custom dataset)
+
+      ----------------> 2) labels ---------------------> train (iske liye hum code likhenge ki wo images ke andar train me jaye aur har ek image me aur waha se label generate kare label ke andar train folder ke andar) 
+                                 ---------------------> val (iske liye hum code likhenge ki wo images ke andar val me jaye aur har ek image me aur waha se label generate kare label ke andar val folder ke andar)
+     
+
+      ----------------> 3) data.yaml (iske liye bhi hum code likhenge )
+
+
+step-3 a)
+#mount google drive
+from google.colab import drive
+drive.mount('/content/gdrive')
+
+#define root directory
+Root_DIR = '/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data'
+
+#pip install ultralytics
+
+step-3 b) creating the data.yaml file
+#mujhe data.yaml fie generate karna hoga yaa ek file banana hoga so mai ise code ke jariye karta hu
+import os
+import yaml
+
+train_images_path = '/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data/images/train'
+val_images_path = '/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data/images/val'
+classes = ['squirrel']
+num_classes = len(classes)
+data_yaml_content = {'train': train_images_path,'val': val_images_path,'nc': num_classes,'names': classes}
+
+# Define the path for the data.yaml file
+data_yaml_path = '/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data/data.yaml'
+
+# Write the content to the data.yaml file
+with open(data_yaml_path, 'w') as file:
+    yaml.dump(data_yaml_content, file, default_flow_style=False)
+
+print(f"data.yaml file has been successfully created at {data_yaml_path}")
+
+step-3 c) after creating the data.yaml file. generate the label for each image present in the images/train folder and make the files inside the label/train
+import os
+import cv2
+
+def generate_labels(image_folder, label_folder, class_index=0):
+    """
+    Generate YOLO labels for all images in the given folder.
+    :param image_folder: Folder containing images.
+    :param label_folder: Folder where labels will be saved.
+    :param class_index: The index of the class (0 for squirrel in your case).
+    """
+    # Ensure the label folder exists
+    if not os.path.exists(label_folder):
+        os.makedirs(label_folder)
+    
+    # Loop through all images in the image folder
+    for image_name in os.listdir(image_folder):
+        # Only process image files
+        if image_name.endswith(('.jpg', '.png', '.jpeg')):
+            # Construct the full path for the image
+            image_path = os.path.join(image_folder, image_name)
+            
+            # Read the image
+            image = cv2.imread(image_path)
+            height, width, _ = image.shape  # Get image dimensions
+            
+            # Here you can manually define your bounding boxes (x_min, y_min, x_max, y_max)
+            # Replace this part with actual bounding box data (use annotation tools like labelImg to get these)
+            # Example: Let's assume a bounding box for a squirrel (you can replace this with actual coordinates).
+            # For example, we define a box at (x_min, y_min, x_max, y_max)
+            bounding_boxes = [
+                (50, 30, 200, 180)  # Example bounding box (x_min, y_min, x_max, y_max)
+            ]
+            
+            # Create a corresponding .txt label file for each image
+            label_path = os.path.join(label_folder, image_name.replace('.jpg', '.txt').replace('.png', '.txt').replace('.jpeg', '.txt'))
+            
+            with open(label_path, 'w') as label_file:
+                # Write the labels to the file in YOLO format
+                for box in bounding_boxes:
+                    x_min, y_min, x_max, y_max = box
+                    
+                    # Convert bounding box to YOLO format (normalized)
+                    x_center = (x_min + x_max) / 2.0 / width
+                    y_center = (y_min + y_max) / 2.0 / height
+                    w = (x_max - x_min) / width
+                    h = (y_max - y_min) / height
+                    
+                    # Write to the label file
+                    label_file.write(f"{class_index} {x_center} {y_center} {w} {h}\n")
+    
+    print("Labels generated successfully!")
+
+# Example usage:
+image_folder = '/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data/images/train'  # Replace with your path
+label_folder = '/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data/labels/train'  # Replace with your path
+
+generate_labels(image_folder, label_folder)
+
+step-3 d) generate the label for each image present in the images/val folder and make the files inside the label/val
+import os
+import cv2
+
+def generate_labels(image_folder, label_folder, class_index=0):
+    """
+    Generate YOLO labels for all images in the given folder.
+    :param image_folder: Folder containing images.
+    :param label_folder: Folder where labels will be saved.
+    :param class_index: The index of the class (0 for squirrel in your case).
+    """
+    # Ensure the label folder exists
+    if not os.path.exists(label_folder):
+        os.makedirs(label_folder)
+    
+    # Loop through all images in the image folder
+    for image_name in os.listdir(image_folder):
+        # Only process image files
+        if image_name.endswith(('.jpg', '.png', '.jpeg')):
+            # Construct the full path for the image
+            image_path = os.path.join(image_folder, image_name)
+            
+            # Read the image
+            image = cv2.imread(image_path)
+            height, width, _ = image.shape  # Get image dimensions
+            
+            # Here you can manually define your bounding boxes (x_min, y_min, x_max, y_max)
+            # Replace this part with actual bounding box data (use annotation tools like labelImg to get these)
+            # Example: Let's assume a bounding box for a squirrel (you can replace this with actual coordinates).
+            # For example, we define a box at (x_min, y_min, x_max, y_max)
+            bounding_boxes = [
+                (50, 30, 200, 180)  # Example bounding box (x_min, y_min, x_max, y_max)
+            ]
+            
+            # Create a corresponding .txt label file for each image
+            label_path = os.path.join(label_folder, image_name.replace('.jpg', '.txt').replace('.png', '.txt').replace('.jpeg', '.txt'))
+            
+            with open(label_path, 'w') as label_file:
+                # Write the labels to the file in YOLO format
+                for box in bounding_boxes:
+                    x_min, y_min, x_max, y_max = box
+                    
+                    # Convert bounding box to YOLO format (normalized)
+                    x_center = (x_min + x_max) / 2.0 / width
+                    y_center = (y_min + y_max) / 2.0 / height
+                    w = (x_max - x_min) / width
+                    h = (y_max - y_min) / height
+                    
+                    # Write to the label file
+                    label_file.write(f"{class_index} {x_center} {y_center} {w} {h}\n")
+    
+    print("Labels generated successfully!")
+
+# Example usage:
+image_folder = '/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data/images/val'  # Replace with your path
+label_folder = '/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data/labels/val'  # Replace with your path
+
+generate_labels(image_folder, label_folder)
+
+# step-e) train the model at the end
+# Step 1: Import necessary libraries
+import random
+import os
+from ultralytics import YOLO
+
+# Step 2: Load the pre-trained YOLOv8 model (e.g., yolov8n.pt)
+model = YOLO('yolov8n.pt')
+
+# Step 3: Define the path to your data.yaml file
+Root_DIR = '/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data'
+data_yaml_path = f'{Root_DIR}/data.yaml'
+
+# Make sure the 'val_image_folder' variable is set correctly, for example:
+val_image_folder = f'{Root_DIR}/images/val'
+
+# Step 4: Select a random image for testing (just for demonstration)
+random_image = random.choice(os.listdir(val_image_folder))
+
+# Step 5: Train the model
+model.train(data=data_yaml_path,epochs=50,imgsz=640,batch=16,project=f'{Root_DIR}/runs',name='custom_training')
+
+# Step 6: Evaluate the trained model (optional)
+results = model.val()
+
+# Step 7: Test the model on a new image (optional)
+results = model.predict(source=f'{Root_DIR}/images/val/{random_image}',show=True)
+
+Step-f) now take the file best.pt from the weight and test it
+import cv2
+from ultralytics import YOLO
+model = YOLO('/content/gdrive/My Drive/computervisionengineer/objectdetectionyolov8googlecolab/data/runs/custom_training3/weights/best.pt')
+ip_camera_url = "http://<username>:<password>@<ip_address>:<port>/video"  # e.g., "http://192.168.1.10:8080/video"
+cap = cv2.VideoCapture(ip_camera_url)
+if not cap.isOpened():
+    print("Error: Unable to connect to the IP camera.")
+    exit()
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        print("Error: Failed to capture image")
+        break
+    results = model(frame)
+    annotated_frame = results[0].plot()
+    cv2.imshow("YOLO Object Detection - IP Camera", annotated_frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+cap.release()
+cv2.destroyAllWindows()
