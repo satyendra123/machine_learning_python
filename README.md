@@ -12,8 +12,14 @@ step-1)
 from google.colab import drive
 drive.mount('/content/drive')
 
-step-2)
 
+step-2)
+!pip install ultralytics
+
+step-3)
 from ultralytics import YOLO
 model = YOLO("yolov8n.pt")
 model.train(data="/content/yolo_dataset/data.yaml", epochs=50, imgsz=640)
+
+step-4)
+go to the runs/detect/train3/best.pt file just download this file
