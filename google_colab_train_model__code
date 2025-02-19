@@ -10,3 +10,21 @@ dataset = version.download("yolov5")
 #step-2 
 !git clone https://github.com/ultralytics/yolov5.git
 
+#step-3
+!pip install ultralytics
+
+#step-4
+cd yolov5/
+!pip install -r requirements.txt
+
+#step-5
+import torch
+model = torch.hub.load("ultralytics/yolov5", "yolov5s")  # or yolov5n - yolov5x6, custom
+img = "https://ultralytics.com/images/zidane.jpg"  # or file, Path, PIL, OpenCV, numpy, list
+results = model(img)
+results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
+
+#step-6 sabse pahle data.yaml ki file me changes karo uske path me
+!python train.py --data /content/dogs-and-cats-1/data.yaml --epochs 300 --weights '' --cfg yolov5n.yaml  --batch-size 128
+                                                                 
+
