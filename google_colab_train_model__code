@@ -1,0 +1,12 @@
+step-1 isse mera sara dataset jo humne 
+!pip install roboflow
+
+from roboflow import Roboflow
+rf = Roboflow(api_key="psrqI8GADhoNHSdvsKy4")
+project = rf.workspace("satyendra").project("dogs-and-cats-nomv6")
+version = project.version(1)
+dataset = version.download("yolov5")
+
+#step-2 
+!git clone https://github.com/ultralytics/yolov5.git
+
